@@ -73,15 +73,15 @@ public class FrameSettings {
         //main_frame.add(Box.createHorizontalStrut(600), BorderLayout.WEST);
         main_frame.add(Box.createHorizontalStrut(670), BorderLayout.EAST);
 
-        // Panel symulacji
-        sim_panel = new SimulationPanel();
-        sim_panel.setPreferredSize(new Dimension(panel_width, panel_height));
-        main_frame.add(sim_panel, BorderLayout.CENTER);
-
         // Panel opcji symulacji
         options_panel = new OptionsPanel();
         options_panel.setPreferredSize(new Dimension(670, panel_height));
         main_frame.add(options_panel, BorderLayout.WEST);
+
+        // Panel symulacji
+        sim_panel = new SimulationPanel();
+        sim_panel.setPreferredSize(new Dimension(panel_width, panel_height));
+        main_frame.add(sim_panel, BorderLayout.CENTER);
 
         // Obsługa przycisku START
         options_panel.getStartSimButton().addActionListener(e -> {
@@ -121,6 +121,13 @@ public class FrameSettings {
         // Obsługa przycisku WYCZYŚĆ
         options_panel.getClearButton().addActionListener(e -> {
             options_panel.clearTextFields(); // Czyszczenie pól tekstowych
+        });
+
+        // Obsługa comboboxa do zmiany prędkości upływu czasu
+        options_panel.getComboTimeSpeed().addActionListener(e -> {
+            // Wywołujemy updateTimeSpeed z SimulationPanel
+            int newTimeSpeed = options_panel.getTimeSpeedValue();  // Pobieramy wartość z combo_box
+            sim_panel.updateTimeSpeed(newTimeSpeed);  // Wywołujemy metodę aktualizującą prędkość
         });
 
         // Wyświetlenie okna

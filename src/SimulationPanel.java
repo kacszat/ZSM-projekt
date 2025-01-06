@@ -21,6 +21,7 @@ public class SimulationPanel extends JPanel {
     public long pause_start_time = 0; // Czas rozpoczęcia pauzy
     public long pause_time = 0; // Czas trwania pauzy
     public int timer_time = 0;
+    private int time_speed_value;
 
     public Boolean is_sim_paused = false; // Flaga określająca stan pauzy
 
@@ -29,7 +30,8 @@ public class SimulationPanel extends JPanel {
         cars_to_generate = new ArrayList<>();
         checkpoints = new ArrayList<>();
 
-        sim_timer = new Timer(1000, e -> updateTimer());
+        time_speed_value = 1;
+        sim_timer = new Timer(1000 / time_speed_value, e -> updateTimer());
 
         // Definiowanie punktów zmiany kierunku (przykładowo)
         checkpoints.add(new Checkpoint(335, 300, 15, 15, "south")); // Punkt na środku skrzyżowania
@@ -187,7 +189,7 @@ public class SimulationPanel extends JPanel {
 
         Random random = new Random();
         int totalCars = cars_to_generate.size();
-        int interval = (int) (simulation_time / totalCars); // Interwał w milisekundach
+        int interval = (int) ((simulation_time / totalCars) / time_speed_value); // Interwał w milisekundach
 
         generator_timer = new Timer(interval, new ActionListener() {
             @Override
@@ -325,6 +327,28 @@ public class SimulationPanel extends JPanel {
         // Formatowanie czasu jako hh:mm:ss
         String timeString = String.format("%02d:%02d:%02d", hours, minutes, seconds);
         OptionsPanel.label_timer.setText(timeString);  // Aktualizacja tekstu etykiety
+    }
+
+    // Aktualizacja szybkości timera w trakcie symulacji
+    public void updateTimeSpeed(int newTimeSpeedValue) {
+        this.time_speed_value = newTimeSpeedValue;
+
+        // Zatrzymujemy obecny timer
+        if (sim_timer.isRunning()) {
+            sim_timer.stop();
+        }
+
+        if (generator_timer != null && generator_timer.isRunning()) {
+            generator_timer.stop(); // Zatrzymujemy generator_timer
+        }
+
+        // Ustawiamy nowy interwał na podstawie nowej wartości time_speed_value
+        sim_timer = new Timer(1000 / time_speed_value, e -> updateTimer());
+        sim_timer.start();  // Uruchamiamy sim_timer ponownie
+
+        // Ponwonie uruchamiamy funckję generacji, by zmienić interwał
+        startCarGeneration();
+
     }
 
 }

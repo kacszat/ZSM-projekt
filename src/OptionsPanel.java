@@ -16,6 +16,8 @@ public class OptionsPanel extends JPanel {
     public static Map<String, Integer> Cars_Data_Map;
     public static JButton bt_start_simulation, bt_stop_simulation, bt_reset_simulation,
                         bt_clear_tb;
+    public static JComboBox<Integer> combo_time_speed;
+    public Integer time_speed_values[] = {1, 2, 3, 4, 5, 10, 20};
 
     public OptionsPanel() {
         // Ustawienia wyglądu panelu
@@ -79,6 +81,9 @@ public class OptionsPanel extends JPanel {
         bt_stop_simulation = new JButton("STOP");
         bt_reset_simulation = new JButton("RESET");
         bt_clear_tb = new JButton("WYCZYŚĆ");
+
+        combo_time_speed = new JComboBox<>(time_speed_values);
+        //combo_time_speed.setSelectedIndex(0);
 
         // Dodawanie komponentów w odpowiednich miejscach
         gbc.gridwidth = 3;
@@ -167,6 +172,8 @@ public class OptionsPanel extends JPanel {
         gbc.gridy = 14;
         gbc.gridx = 0;
         add(label_info9, gbc);
+        gbc.gridx = 1;
+        add(combo_time_speed, gbc);
     }
 
      //Mapa, gdzie kluczem jest opis pola, a wartością liczba pojazdów.
@@ -196,7 +203,7 @@ public class OptionsPanel extends JPanel {
         }
     }
 
-    // Funkcję obsługujące przyciski
+    // Funkcję obsługujące przyciski i comboboxa
     public JButton getStartSimButton() {
         return bt_start_simulation;
     }
@@ -213,9 +220,18 @@ public class OptionsPanel extends JPanel {
         return bt_clear_tb;
     }
 
+    public static JComboBox<Integer> getComboTimeSpeed() {
+        return combo_time_speed;
+    }
+
     // Pobranie czasu symulacji
     public long getSimTime() {
         return parseTextField(tb_sim_time);
+    }
+
+    // Pobranie wartości prędkości upływu czasu
+    public static int getTimeSpeedValue() {
+        return (int) combo_time_speed.getSelectedItem();
     }
 
     // Wyczuszczenie zapisów w TextFieldach

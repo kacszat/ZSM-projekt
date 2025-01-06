@@ -10,6 +10,7 @@ public class Car {
     private String destination; // Destynacja
     private String original_origin; // Oryginalne pochodzenie
     private String turn_direction; // Kierunek skrętu
+    private int speed_value;
 
     private Set<Checkpoint> visitedCheckpoints; // Lista odwiedzonych checkpointów
 
