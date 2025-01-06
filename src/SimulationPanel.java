@@ -275,6 +275,8 @@ public class SimulationPanel extends JPanel {
                         }
                     }
 
+                    car.setSpeed(OptionsPanel.getTimeSpeedValue());
+
                     car.move();
                 }
             }

@@ -10,15 +10,16 @@ public class Car {
     private String destination; // Destynacja
     private String original_origin; // Oryginalne pochodzenie
     private String turn_direction; // Kierunek skrętu
-    private int speed_value;
+    private static final int base_speed = 5;
+    private int speed;
 
     private Set<Checkpoint> visitedCheckpoints; // Lista odwiedzonych checkpointów
 
     public Car(String car_origin, String car_destination) {
         this.x = 0;
         this.y = 0;
-        this.dx = 5;
-        this.dy = 5;
+        this.dx = base_speed;
+        this.dy = base_speed;
         this.origin = car_origin;
         this.destination = car_destination;
         this.original_origin = car_origin;
@@ -55,16 +56,16 @@ public class Car {
         if (!stopped) {
             switch (origin) {
                 case "north":
-                    y += dy;
+                    y += speed;
                     break;
                 case "south":
-                    y -= dy;
+                    y -= speed;
                     break;
                 case "east":
-                    x -= dx;
+                    x -= speed;
                     break;
                 case "west":
-                    x += dx;
+                    x += speed;
                     break;
             }
         }
@@ -78,12 +79,12 @@ public class Car {
                         // Nie zmieniamy kierunku, bo jedzie prosto
                         break;
                     case "east":
-                        dx = 5;
+                        dx = speed;
                         dy = 0;
                         origin = "west"; // Aktualizacja kierunku
                         break;
                     case "west":
-                        dx = 5;
+                        dx = speed;
                         dy = 0;
                         origin = "east"; // Aktualizacja kierunku
                         break;
@@ -94,12 +95,12 @@ public class Car {
                     case "north":
                         break;
                     case "east":
-                        dx = 5;
+                        dx = speed;
                         dy = 0;
                         origin = "west"; // Aktualizacja kierunku
                         break;
                     case "west":
-                        dx = 5;
+                        dx = speed;
                         dy = 0;
                         origin = "east"; // Aktualizacja kierunku
                         break;
@@ -109,12 +110,12 @@ public class Car {
                 switch (destination) {
                     case "north":
                         dx = 0;
-                        dy = 5;
+                        dy = speed;
                         origin = "south"; // Aktualizacja kierunku
                         break;
                     case "south":
                         dx = 0;
-                        dy = 5;
+                        dy = speed;
                         origin = "north"; // Aktualizacja kierunku
                         break;
                     case "west":
@@ -125,12 +126,12 @@ public class Car {
                 switch (destination) {
                     case "north":
                         dx = 0;
-                        dy = 5;
+                        dy = speed;
                         origin = "south"; // Aktualizacja kierunku
                         break;
                     case "south":
                         dx = 0;
-                        dy = 5;
+                        dy = speed;
                         origin = "north"; // Aktualizacja kierunku
                         break;
                     case "east":
@@ -248,6 +249,10 @@ public class Car {
 
     public void visitCheckpoint(Checkpoint checkpoint) {
         visitedCheckpoints.add(checkpoint);
+    }
+
+    public void setSpeed(int new_value) {
+        this.speed = base_speed * new_value;
     }
 
 }
