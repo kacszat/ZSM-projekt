@@ -16,6 +16,7 @@ public class FrameSettings {
 
     static SimulationPanel sim_panel;
     static OptionsPanel options_panel;
+    static StreetlightsPanel streetlights_panel;
 
     public static void showFrame() {
         // Tworzymy nowe okno
@@ -71,7 +72,7 @@ public class FrameSettings {
         main_frame.add(Box.createVerticalStrut(200), BorderLayout.NORTH);
         main_frame.add(Box.createVerticalStrut(200), BorderLayout.SOUTH);
         //main_frame.add(Box.createHorizontalStrut(600), BorderLayout.WEST);
-        main_frame.add(Box.createHorizontalStrut(670), BorderLayout.EAST);
+        //.add(Box.createHorizontalStrut(670), BorderLayout.EAST);
 
         // Panel opcji symulacji
         options_panel = new OptionsPanel();
@@ -82,6 +83,11 @@ public class FrameSettings {
         sim_panel = new SimulationPanel();
         sim_panel.setPreferredSize(new Dimension(panel_width, panel_height));
         main_frame.add(sim_panel, BorderLayout.CENTER);
+
+        // Panel opcji sygnalziacji świetlnej
+        streetlights_panel = new StreetlightsPanel();
+        streetlights_panel.setPreferredSize(new Dimension(670, panel_height));
+        main_frame.add(streetlights_panel, BorderLayout.EAST);
 
         // Obsługa przycisku START
         options_panel.getStartSimButton().addActionListener(e -> {

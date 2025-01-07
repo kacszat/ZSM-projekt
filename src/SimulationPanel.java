@@ -16,6 +16,7 @@ public class SimulationPanel extends JPanel {
     private java.util.List<Car> cars;
     private java.util.List<Car> cars_to_generate;
     private java.util.List<Checkpoint> checkpoints;
+    private java.util.List<Streetlight> streetlights;
     public long simulation_time; // Czas symulacji w milisekundach
     public long start_time;      // Czas rozpoczęcia symulacji
     public long pause_start_time = 0; // Czas rozpoczęcia pauzy
@@ -29,17 +30,21 @@ public class SimulationPanel extends JPanel {
         cars = new ArrayList<>();
         cars_to_generate = new ArrayList<>();
         checkpoints = new ArrayList<>();
+        streetlights = new ArrayList<>();
 
         time_speed_value = 1;
         sim_timer = new Timer(1000 / time_speed_value, e -> updateTimer());
 
-        // Definiowanie punktów zmiany kierunku (przykładowo)
-        checkpoints.add(new Checkpoint(335, 300, 15, 15, "south")); // Punkt na środku skrzyżowania
-        checkpoints.add(new Checkpoint(250, 285, 15, 15, "north")); // Punkt na środku skrzyżowania
-        checkpoints.add(new Checkpoint(285, 335, 15, 15, "west")); // Punkt na środku skrzyżowania
-        checkpoints.add(new Checkpoint(300, 250, 15, 15, "east")); // Punkt na środku skrzyżowania
-        //checkpoints.add(new Checkpoint(290, 100, 20, 20, "south")); // Inny punkt zmiany kierunku
+        // Definiowanie punktów zmiany kierunku, świateł
+        checkpoints.add(new Checkpoint(335, 300, 15, 15, "south"));
+        checkpoints.add(new Checkpoint(250, 285, 15, 15, "north"));
+        checkpoints.add(new Checkpoint(285, 335, 15, 15, "west"));
+        checkpoints.add(new Checkpoint(300, 250, 15, 15, "east"));
 
+        streetlights.add(new Streetlight(300, 250, 50, 5, "south", "red"));
+        streetlights.add(new Streetlight(250, 245, 50, 5, "north", "red"));
+        streetlights.add(new Streetlight(350, 250, 5, 50, "east", "red"));
+        streetlights.add(new Streetlight(245, 300, 5, 50, "west", "red"));
     }
 
     @Override
@@ -78,6 +83,19 @@ public class SimulationPanel extends JPanel {
 //        g.fillRect(250, 285, 15, 15);
 //        g.fillRect(285, 335, 15, 15);
 //        g.fillRect(300, 250, 15, 15);
+        g.fillRect(300, 350, 50, 5);
+        g.fillRect(250, 245, 50, 5);
+        g.fillRect(350, 250, 5, 50);
+        g.fillRect(245, 300, 5, 50);
+
+        if (StreetlightsPanel.is_streetlight_on) {
+            // Rysowanie sygnalziacji świetlnej
+            g.setColor(Color.BLACK);
+            g.fillRect(360, 360,20,60);
+            g.fillRect(220, 180,20,60);
+            g.fillRect(360, 220,60,20);
+            g.fillRect(180, 360,60,20);
+        }
 
         for (Car car : cars) {
             g.setColor(Color.RED);
@@ -351,6 +369,54 @@ public class SimulationPanel extends JPanel {
         // Ponwonie uruchamiamy funckję generacji, by zmienić interwał
         startCarGeneration();
 
+    }
+
+    // Funkcja tworząca program sygnalizacji świetlnej
+    public void createStreetlights() {
+        if (StreetlightsPanel.Streetlights_Map.isEmpty()) {
+            return; // Jeśli mapa jest pusta, nie robimy nic
+        }
+
+        String localisation;
+        int seconds;
+
+        // Iterujemy po mapie, aby uzyskać lokalizację danego sygnalizatora i czas wyświetlania syg. zielonego
+        for (Map.Entry<String, Integer> entry : StreetlightsPanel.Streetlights_Map.entrySet()) {
+            localisation = entry.getKey();  // Np. "north south"
+            seconds = entry.getValue();    // liczba sekund
+
+            // Dodajemy wewnętrzną pętlę for, która będzie wykonywana co każdą sekundę
+            for (int i = 0; i < seconds; i++) {
+                // Wykonujemy odpowiednią akcję w zależności od lokalizacji sygnalizatora
+                if (localisation.contains("south")) {
+                    // Generujemy akcje dla sygnalizatora w kierunku "south"
+                    System.out.println("Zmiana sygnalizacji na południe.");
+                    // Można dodać tutaj kod do zmiany koloru świateł na czerwony/zielony
+                } else if (localisation.contains("east")) {
+                    // Generujemy akcje dla sygnalizatora w kierunku "east"
+                    System.out.println("Zmiana sygnalizacji na wschód.");
+                    // Kod do zmiany koloru sygnalizatora wschodniego
+                } else if (localisation.contains("north")) {
+                    // Generujemy akcje dla sygnalizatora w kierunku "north"
+                    System.out.println("Zmiana sygnalizacji na północ.");
+                    // Kod do zmiany koloru sygnalizatora północnego
+                } else if (localisation.contains("west")) {
+                    // Generujemy akcje dla sygnalizatora w kierunku "west"
+                    System.out.println("Zmiana sygnalizacji na zachód.");
+                    // Kod do zmiany koloru sygnalizatora zachodniego
+                }
+
+                // Odświeżenie panelu
+                repaint();
+
+                // Można dodać opóźnienie na czas trwania każdej sekundy
+                try {
+                    Thread.sleep(1000 / time_speed_value);  // Odświeżanie funkcji z uwzględnieniem prędkości symulacji
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
 }

@@ -26,7 +26,7 @@ public class OptionsPanel extends JPanel {
 
         // Konfiguracja GridBagConstraints
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 10, 50); // Marginesy między komponentami
+        gbc.insets = new Insets(5, 10, 10, 40); // Marginesy między komponentami
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
@@ -194,10 +194,11 @@ public class OptionsPanel extends JPanel {
         return Cars_Data_Map;
     }
 
-    //Metoda pomocnicza, która "parsuje" wartość z pola tekstowego.
+    // Metoda pomocnicza, która "parsuje" wartość z pola tekstowego i nie przyjmuje wartości mniejszych niż 0.
     private int parseTextField(JTextField textField) {
         try {
-            return Integer.parseInt(textField.getText().trim());
+            int value = Integer.parseInt(textField.getText().trim());
+            return Math.max(value, 0); // Zwraca wartość, ale nie mniejszą niż 0
         } catch (NumberFormatException e) {
             return 0; // Zwraca 0, jeśli pole jest puste lub zawiera błędne dane
         }
