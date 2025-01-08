@@ -33,4 +33,8 @@ public class Streetlight {
         return type;
     }
 
+    public String getColor_st() {
+        return color;
+    }
+
 }

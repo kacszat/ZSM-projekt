@@ -12,6 +12,7 @@ public class SimulationPanel extends JPanel {
     static Integer sim_width = FrameSettings.panel_width;
     public Timer sim_timer;
     public Timer generator_timer;
+    public Timer streetlight_timer;
 
     private java.util.List<Car> cars;
     private java.util.List<Car> cars_to_generate;
@@ -88,13 +89,17 @@ public class SimulationPanel extends JPanel {
         g.fillRect(350, 250, 5, 50);
         g.fillRect(245, 300, 5, 50);
 
+//        // Rysowanie wszystkich sygnalizatorów
+//        for (Streetlight streetlight : streetlights) {
+//            streetlight.draw(g);
+//        }
+
         if (StreetlightsPanel.is_streetlight_on) {
             // Rysowanie sygnalziacji świetlnej
-            g.setColor(Color.BLACK);
-            g.fillRect(360, 360,20,60);
-            g.fillRect(220, 180,20,60);
-            g.fillRect(360, 220,60,20);
-            g.fillRect(180, 360,60,20);
+            drawTrafficLight(g2d, "south", "red"); // Sygnalizator południowy
+            drawTrafficLight(g2d, "north", "red"); // Sygnalizator północny
+            drawTrafficLight(g2d, "west", "red"); // Sygnalizator wschodni
+            drawTrafficLight(g2d, "east", "red"); // Sygnalizator zachodni
         }
 
         for (Car car : cars) {
@@ -239,6 +244,7 @@ public class SimulationPanel extends JPanel {
         countCars(cars_map);                // Generowanie pojazdów
         startCarGeneration();               // Rozpoczęcie generowania samochodów z interwałem
         new Thread(this::run).start();      // Uruchomienie symulacji w nowym wątku
+        createStreetlights();
     }
 
     public void run() {
@@ -377,46 +383,165 @@ public class SimulationPanel extends JPanel {
             return; // Jeśli mapa jest pusta, nie robimy nic
         }
 
-        String localisation;
-        int seconds;
+        if (streetlight_timer != null && streetlight_timer.isRunning()) {
+            return; // Jeśli timer już działa, nie robimy nic
+        }
 
-        // Iterujemy po mapie, aby uzyskać lokalizację danego sygnalizatora i czas wyświetlania syg. zielonego
-        for (Map.Entry<String, Integer> entry : StreetlightsPanel.Streetlights_Map.entrySet()) {
-            localisation = entry.getKey();  // Np. "north south"
-            seconds = entry.getValue();    // liczba sekund
+        // Tworzymy nowy timer, który będzie zarządzał zmianą sygnalizacji
+        streetlight_timer = new Timer(1000 / time_speed_value, new ActionListener() { // Timer co 1 sekundę
+            private int elapsedTime = 0; // Licznik czasu
 
-            // Dodajemy wewnętrzną pętlę for, która będzie wykonywana co każdą sekundę
-            for (int i = 0; i < seconds; i++) {
-                // Wykonujemy odpowiednią akcję w zależności od lokalizacji sygnalizatora
-                if (localisation.contains("south")) {
-                    // Generujemy akcje dla sygnalizatora w kierunku "south"
-                    System.out.println("Zmiana sygnalizacji na południe.");
-                    // Można dodać tutaj kod do zmiany koloru świateł na czerwony/zielony
-                } else if (localisation.contains("east")) {
-                    // Generujemy akcje dla sygnalizatora w kierunku "east"
-                    System.out.println("Zmiana sygnalizacji na wschód.");
-                    // Kod do zmiany koloru sygnalizatora wschodniego
-                } else if (localisation.contains("north")) {
-                    // Generujemy akcje dla sygnalizatora w kierunku "north"
-                    System.out.println("Zmiana sygnalizacji na północ.");
-                    // Kod do zmiany koloru sygnalizatora północnego
-                } else if (localisation.contains("west")) {
-                    // Generujemy akcje dla sygnalizatora w kierunku "west"
-                    System.out.println("Zmiana sygnalizacji na zachód.");
-                    // Kod do zmiany koloru sygnalizatora zachodniego
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Zwiększaj licznik czasu
+                elapsedTime++;
+
+                // Iteruj po mapie sygnalizatorów, aby zmieniać kolory co 1 sekundę
+                for (Map.Entry<String, Integer> entry : StreetlightsPanel.Streetlights_Map.entrySet()) {
+                    String localisation = entry.getKey();  // Np. "north south"
+                    int duration = entry.getValue();       // liczba sekund, przez które będzie świecił dany kolor
+
+                    if (elapsedTime % duration == 0) { // Co określoną liczbę sekund zmieniamy sygnalizację
+                        if (localisation.contains("south")) {
+                            if (localisation.contains("1")) {
+                                //changeTrafficLightPhase(g2d, "south", "green");
+                            } else {
+
+                            }
+                            System.out.println("Zmiana sygnalizacji na południe.");
+                            // Kod do zmiany koloru sygnalizatora na południe
+                        } else if (localisation.contains("east")) {
+                            System.out.println("Zmiana sygnalizacji na wschód.");
+                            // Kod do zmiany koloru sygnalizatora na wschód
+                        } else if (localisation.contains("north")) {
+                            System.out.println("Zmiana sygnalizacji na północ.");
+                            // Kod do zmiany koloru sygnalizatora na północ
+                        } else if (localisation.contains("west")) {
+                            System.out.println("Zmiana sygnalizacji na zachód.");
+                            // Kod do zmiany koloru sygnalizatora na zachód
+                        }
+                    }
                 }
 
                 // Odświeżenie panelu
                 repaint();
-
-                // Można dodać opóźnienie na czas trwania każdej sekundy
-                try {
-                    Thread.sleep(1000 / time_speed_value);  // Odświeżanie funkcji z uwzględnieniem prędkości symulacji
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
+        });
+
+        // Uruchomienie timera
+        streetlight_timer.start();
+    }
+
+    // Funkcja do rysowania sygnalizatora
+    private void drawTrafficLight(Graphics2D g, String location, String phase) {
+        g.setColor(Color.BLACK);
+        int x, y;
+
+        // Rysowanie świateł i sygnalziatorów, z podziałem na stan i lokalizację
+        if (location == "north") {
+            x = 220;
+            y = 180;
+            g.fillRect(x, y, 20, 60);
+            switch (phase) {
+                case "red":
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 2, y + 42, 16, 15); // Dolne światło
+                    break;
+                case "red_yellow":
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 2, y + 22, 16, 15); // Środkowe światło
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 2, y + 42, 16, 15); // Dolne światło
+                    break;
+                case "yellow":
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 2, y + 22, 16, 15); // Środkowe światło
+                    break;
+                case "green":
+                    g.setColor(Color.GREEN);
+                    g.fillRect(x + 2, y + 2, 16, 15);  // Górne światło
+                    break;
+            }
+        } else if (location == "south") {
+            x = 360;
+            y = 360;
+            g.fillRect(x, y, 20, 60);
+            switch (phase) {
+                case "red":
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 2, y + 2, 16, 15);  // Górne światło
+                    break;
+                case "red_yellow":
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 2, y + 2, 16, 15);  // Górne światło
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 2, y + 22, 16, 15); // Środkowe światło
+                    break;
+                case "yellow":
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 2, y + 22, 16, 15); // Środkowe światło
+                    break;
+                case "green":
+                    g.setColor(Color.GREEN);
+                    g.fillRect(x + 2, y + 42, 16, 15); // Dolne światło
+                    break;
+                }
+        } else if (location == "west") {
+            x = 180;
+            y = 360;
+            g.fillRect(x, y, 60, 20);
+            switch (phase) {
+                case "red":
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 42, y + 2, 15, 16); // Prawe światło
+                    break;
+                case "red_yellow":
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 22, y + 2, 15, 16); // Środkowe światło
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 42, y + 2, 15, 16); // Prawe światło
+                    break;
+                case "yellow":
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 22, y + 2, 15, 16); // Środkowe światło
+                    break;
+                case "green":
+                    g.setColor(Color.GREEN);
+                    g.fillRect(x + 2, y + 2, 15, 16);  // Lewe światło
+                    break;
+            }
+        } else { // east
+            x = 360;
+            y = 220;
+            g.fillRect(x, y, 60, 20);
+            switch (phase) {
+                case "red":
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 2, y + 2, 15, 16);  // Lewe światło
+                    break;
+                case "red_yellow":
+                    g.setColor(Color.RED);
+                    g.fillRect(x + 2, y + 2, 15, 16);  // Lewe światło
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 22, y + 2, 15, 16); // Środkowe światło
+                    break;
+                case "yellow":
+                    g.setColor(Color.YELLOW);
+                    g.fillRect(x + 22, y + 2, 15, 16); // Środkowe światło
+                    break;
+                case "green":
+                    g.setColor(Color.GREEN);
+                    g.fillRect(x + 42, y + 2, 15, 16); // Prawe światło
+                    break;
+            }
+
         }
+        
+        repaint();
+    }
+
+    public void changeTrafficLightPhase(Graphics2D g2d, String location, String phase) {
+        drawTrafficLight(g2d, location, phase);
     }
 
 }
