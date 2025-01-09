@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
+import java.util.List;
 import java.util.Random;
 
 public class SimulationPanel extends JPanel {
@@ -26,6 +27,10 @@ public class SimulationPanel extends JPanel {
     private int time_speed_value;
 
     public Boolean is_sim_paused = false; // Flaga określająca stan pauzy
+
+    private String tl_south_color = "red", tl_west_color = "red", tl_north_color = "red", tl_east_color = "red"; // Kolory świateł aygnalizacji
+
+    private Graphics2D g;
 
     SimulationPanel(){
         cars = new ArrayList<>();
@@ -52,6 +57,7 @@ public class SimulationPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); // Ustawia poprawne rysowanie
         Graphics2D g2d = (Graphics2D) g;
+        this.g = g2d;
 
         // Rysowanie obszaru skrzyżowania
         //g.setColor(new Color(0, 153, 0));
@@ -96,10 +102,10 @@ public class SimulationPanel extends JPanel {
 
         if (StreetlightsPanel.is_streetlight_on) {
             // Rysowanie sygnalziacji świetlnej
-            drawTrafficLight(g2d, "south", "red"); // Sygnalizator południowy
-            drawTrafficLight(g2d, "north", "red"); // Sygnalizator północny
-            drawTrafficLight(g2d, "west", "red"); // Sygnalizator wschodni
-            drawTrafficLight(g2d, "east", "red"); // Sygnalizator zachodni
+            drawTrafficLight("south", tl_south_color); // Sygnalizator południowy
+            drawTrafficLight("north", tl_north_color); // Sygnalizator północny
+            drawTrafficLight("west", tl_west_color); // Sygnalizator wschodni
+            drawTrafficLight("east", tl_east_color); // Sygnalizator zachodni
         }
 
         for (Car car : cars) {
@@ -244,7 +250,8 @@ public class SimulationPanel extends JPanel {
         countCars(cars_map);                // Generowanie pojazdów
         startCarGeneration();               // Rozpoczęcie generowania samochodów z interwałem
         new Thread(this::run).start();      // Uruchomienie symulacji w nowym wątku
-        createStreetlights();
+        new Thread(this::startTrafficlights).start();  // Uruchomienie programu sygnalizacji świetlnej
+
     }
 
     public void run() {
@@ -378,7 +385,7 @@ public class SimulationPanel extends JPanel {
     }
 
     // Funkcja tworząca program sygnalizacji świetlnej
-    public void createStreetlights() {
+    public void startTrafficlights() {
         if (StreetlightsPanel.Streetlights_Map.isEmpty()) {
             return; // Jeśli mapa jest pusta, nie robimy nic
         }
@@ -388,43 +395,108 @@ public class SimulationPanel extends JPanel {
         }
 
         // Tworzymy nowy timer, który będzie zarządzał zmianą sygnalizacji
-        streetlight_timer = new Timer(1000 / time_speed_value, new ActionListener() { // Timer co 1 sekundę
-            private int elapsedTime = 0; // Licznik czasu
+        streetlight_timer = new Timer(1000 / time_speed_value, new ActionListener() {
+        private int elapsedTime = 0; // Licznik czasu
+        private int currentSignalIndex = 0; // Indeks aktualnego sygnalizatora
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Zwiększaj licznik czasu
-                elapsedTime++;
+                // Tworzenie list kluczy i wartości
+                List<String> keys = new ArrayList<>(StreetlightsPanel.Streetlights_Map.keySet());
+                List<Integer> values = new ArrayList<>(StreetlightsPanel.Streetlights_Map.values());
 
-                // Iteruj po mapie sygnalizatorów, aby zmieniać kolory co 1 sekundę
-                for (Map.Entry<String, Integer> entry : StreetlightsPanel.Streetlights_Map.entrySet()) {
-                    String localisation = entry.getKey();  // Np. "north south"
-                    int duration = entry.getValue();       // liczba sekund, przez które będzie świecił dany kolor
-
-                    if (elapsedTime % duration == 0) { // Co określoną liczbę sekund zmieniamy sygnalizację
-                        if (localisation.contains("south")) {
-                            if (localisation.contains("1")) {
-                                //changeTrafficLightPhase(g2d, "south", "green");
-                            } else {
-
-                            }
-                            System.out.println("Zmiana sygnalizacji na południe.");
-                            // Kod do zmiany koloru sygnalizatora na południe
-                        } else if (localisation.contains("east")) {
-                            System.out.println("Zmiana sygnalizacji na wschód.");
-                            // Kod do zmiany koloru sygnalizatora na wschód
-                        } else if (localisation.contains("north")) {
-                            System.out.println("Zmiana sygnalizacji na północ.");
-                            // Kod do zmiany koloru sygnalizatora na północ
-                        } else if (localisation.contains("west")) {
-                            System.out.println("Zmiana sygnalizacji na zachód.");
-                            // Kod do zmiany koloru sygnalizatora na zachód
-                        }
-                    }
+                // Jeśli lista jest pusta, kończymy działanie
+                if (keys.isEmpty() || values.isEmpty()) {
+                    return;
                 }
 
-                // Odświeżenie panelu
-                repaint();
+                // Pobieranie aktualnego sygnalizatora i jego czasu trwania
+                String localisation = keys.get(currentSignalIndex);
+                int duration = values.get(currentSignalIndex);
+
+                // Zmiana świateł tylko na początku cyklu (elapsedTime == 0)
+                //if (elapsedTime == 0) {
+                    System.out.println("Sygnalizator: " + localisation);
+
+                    // Logika zmiany koloru sygnalizatora
+                    if (localisation.contains("south")) {
+                        if (localisation.contains("ewaku")) {
+                            if (elapsedTime == 0) {
+                                tl_south_color = "yellow";
+                            } else {
+                                tl_south_color = "red";
+                            }
+                        } else {
+                            if (elapsedTime == 0) {
+                                tl_south_color = "red_yellow";
+                            } else {
+                                tl_south_color = "green";
+                            }
+                        }
+                    } else {
+                        tl_south_color = "red";
+                    }
+                    if (localisation.contains("east")) {
+                        if (localisation.contains("ewaku")) {
+                            if (elapsedTime == 0) {
+                                tl_east_color = "yellow";
+                            } else {
+                                tl_east_color = "red";
+                            }
+                        } else {
+                            if (elapsedTime == 0) {
+                                tl_east_color = "red_yellow";
+                            } else {
+                                tl_east_color = "green";
+                            }
+                        }
+                    } else {
+                        tl_east_color = "red";
+                    }
+                    if (localisation.contains("north")) {
+                        if (localisation.contains("ewaku")) {
+                            if (elapsedTime == 0) {
+                                tl_north_color = "yellow";
+                            } else {
+                                tl_north_color = "red";
+                            }
+                        } else {
+                            if (elapsedTime == 0) {
+                                tl_north_color = "red_yellow";
+                            } else {
+                                tl_north_color = "green";
+                            }
+                        }
+                    } else {
+                        tl_north_color = "red";
+                    }
+                    if (localisation.contains("west")) {
+                        if (localisation.contains("ewaku")) {
+                            if (elapsedTime == 0) {
+                                tl_west_color = "yellow";
+                            } else {
+                                tl_west_color = "red";
+                            }
+                        } else {
+                            if (elapsedTime == 0) {
+                                tl_west_color = "red_yellow";
+                            } else {
+                                tl_west_color = "green";
+                            }
+                        }
+                    } else {
+                        tl_west_color = "red";
+                    }
+                //}
+
+                // Zwiększanie licznika czasu
+                elapsedTime++;
+
+                // Po osiągnięciu czasu trwania dla aktualnego sygnalizatora przechodzimy do kolejnego
+                if (elapsedTime >= duration) {
+                    currentSignalIndex = (currentSignalIndex + 1) % keys.size(); // Przejście do kolejnego sygnalizatora
+                    elapsedTime = 0; // Reset licznika czasu dla nowego sygnalizatora
+                }
             }
         });
 
@@ -433,7 +505,7 @@ public class SimulationPanel extends JPanel {
     }
 
     // Funkcja do rysowania sygnalizatora
-    private void drawTrafficLight(Graphics2D g, String location, String phase) {
+    private void drawTrafficLight(String location, String phase) {
         g.setColor(Color.BLACK);
         int x, y;
 
@@ -536,12 +608,8 @@ public class SimulationPanel extends JPanel {
             }
 
         }
-        
-        repaint();
-    }
 
-    public void changeTrafficLightPhase(Graphics2D g2d, String location, String phase) {
-        drawTrafficLight(g2d, location, phase);
+        repaint();
     }
 
 }

@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class StreetlightsPanel extends JPanel {
@@ -28,7 +29,6 @@ public class StreetlightsPanel extends JPanel {
         setBackground(Color.GRAY);
 
         Streetlights_Map = new HashMap<String, Integer>();
-
 
         label_null1 = new JLabel("");
         label_null2 = new JLabel("");
@@ -137,11 +137,11 @@ public class StreetlightsPanel extends JPanel {
                 String selectedItem = (String) combo_streetlights_type.getSelectedItem(); // Rzutowanie na String
                 switch (selectedItem) {
                     case "Dwufazowa":
-                        Streetlights_Map = new HashMap<>();
-                        Streetlights_Map.put("north south 1", parseTextField(tf_ziel_dwu1));
-                        Streetlights_Map.put("north south 2", parseTextField(tf_ewaku_dwu1));
-                        Streetlights_Map.put("west east 1", parseTextField(tf_ziel_dwu2));
-                        Streetlights_Map.put("west east 2", parseTextField(tf_ewaku_dwu2));
+                        Streetlights_Map = new LinkedHashMap<>();
+                        Streetlights_Map.put("1 north south", parseTextField(tf_ziel_dwu1));
+                        Streetlights_Map.put("2 north south ewaku", parseTextField(tf_ewaku_dwu1));
+                        Streetlights_Map.put("3 west east", parseTextField(tf_ziel_dwu2));
+                        Streetlights_Map.put("4 west east ewaku", parseTextField(tf_ewaku_dwu2));
                         break;
                     case "Trójfazowa":
                         break;
