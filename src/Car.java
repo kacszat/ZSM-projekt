@@ -14,6 +14,7 @@ public class Car {
     private int speed;
 
     private Set<Checkpoint> visitedCheckpoints; // Lista odwiedzonych checkpointów
+    private Set<Streetlight> visitedStreetlights; // Lista odwiedzonych checkpointów
 
     public Car(String car_origin, String car_destination) {
         this.x = 0;
@@ -29,6 +30,7 @@ public class Car {
 
         // Inicjalizacja zbioru odwiedzonych checkpointów
         visitedCheckpoints = new HashSet<>();
+        visitedStreetlights = new HashSet<>();
     }
 
     public void spawn() {
@@ -249,6 +251,14 @@ public class Car {
 
     public void visitCheckpoint(Checkpoint checkpoint) {
         visitedCheckpoints.add(checkpoint);
+    }
+
+    public boolean hasVisitedStreetlight(Streetlight streetlight) {
+        return visitedStreetlights.contains(streetlight);
+    }
+
+    public void visitStreetlight(Streetlight streetlight) {
+        visitedStreetlights.add(streetlight);
     }
 
     public void setSpeed(int new_value) {

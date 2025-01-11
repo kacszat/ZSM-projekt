@@ -250,7 +250,7 @@ public class SimulationPanel extends JPanel {
         countCars(cars_map);                // Generowanie pojazdów
         startCarGeneration();               // Rozpoczęcie generowania samochodów z interwałem
         new Thread(this::run).start();      // Uruchomienie symulacji w nowym wątku
-        new Thread(this::startTrafficlights).start();  // Uruchomienie programu sygnalizacji świetlnej
+        startTrafficlights();  // Uruchomienie programu sygnalizacji świetlnej
 
     }
 
@@ -304,6 +304,24 @@ public class SimulationPanel extends JPanel {
                             //System.out.println("Samochód dotarł do checkpointu typu: " + checkpoint.getType_ch());
                             break;
                         }
+                    }
+
+                    for (Streetlight streetlight : streetlights) {
+                        Rectangle carBounds = car.getBounds();
+                        Rectangle streetlightBounds = new Rectangle(streetlight.getX_st(), streetlight.getY_st(), streetlight.getWidht_st(), streetlight.getHeight_st());
+
+                        // Sprawdź, czy samochód przecina checkpoint i czy nie odwiedził go wcześniej
+                        if (carBounds.intersects(streetlightBounds) && !car.hasVisitedStreetlight(streetlight)) {
+                            car.visitStreetlight(streetlight);  // Oznacz checkpoint streetlight
+                            // jako odwiedzony
+                            if ((Objects.equals(car.getOrigin(), streetlight.getType_st())) && (Objects.equals(streetlight.getColor_st(), "red"))) {
+                                car.stop();            // Stop
+                            } else {
+                                car.resume();            // Ruch
+                            }
+                            break;
+                        }
+
                     }
 
                     car.setSpeed(OptionsPanel.getTimeSpeedValue());
@@ -421,6 +439,7 @@ public class SimulationPanel extends JPanel {
                     // Logika zmiany koloru sygnalizatora
                     if (localisation.contains("south")) {
                         if (localisation.contains("ewaku")) {
+                            setStreetlightCheckpoint("south", "red");
                             if (elapsedTime == 0) {
                                 tl_south_color = "yellow";
                             } else {
@@ -429,8 +448,10 @@ public class SimulationPanel extends JPanel {
                         } else {
                             if (elapsedTime == 0) {
                                 tl_south_color = "red_yellow";
+                                setStreetlightCheckpoint("south", "red");
                             } else {
                                 tl_south_color = "green";
+                                setStreetlightCheckpoint("south", "red");
                             }
                         }
                     } else {
@@ -438,6 +459,7 @@ public class SimulationPanel extends JPanel {
                     }
                     if (localisation.contains("east")) {
                         if (localisation.contains("ewaku")) {
+                            setStreetlightCheckpoint("east", "red");
                             if (elapsedTime == 0) {
                                 tl_east_color = "yellow";
                             } else {
@@ -446,8 +468,10 @@ public class SimulationPanel extends JPanel {
                         } else {
                             if (elapsedTime == 0) {
                                 tl_east_color = "red_yellow";
+                                setStreetlightCheckpoint("east", "red");
                             } else {
                                 tl_east_color = "green";
+                                setStreetlightCheckpoint("east", "green");
                             }
                         }
                     } else {
@@ -455,6 +479,7 @@ public class SimulationPanel extends JPanel {
                     }
                     if (localisation.contains("north")) {
                         if (localisation.contains("ewaku")) {
+                            setStreetlightCheckpoint("north", "red");
                             if (elapsedTime == 0) {
                                 tl_north_color = "yellow";
                             } else {
@@ -463,8 +488,11 @@ public class SimulationPanel extends JPanel {
                         } else {
                             if (elapsedTime == 0) {
                                 tl_north_color = "red_yellow";
+                                ;
+                                setStreetlightCheckpoint("north", "red");
                             } else {
                                 tl_north_color = "green";
+                                setStreetlightCheckpoint("north", "green");
                             }
                         }
                     } else {
@@ -472,6 +500,7 @@ public class SimulationPanel extends JPanel {
                     }
                     if (localisation.contains("west")) {
                         if (localisation.contains("ewaku")) {
+                            setStreetlightCheckpoint("west", "red");
                             if (elapsedTime == 0) {
                                 tl_west_color = "yellow";
                             } else {
@@ -480,8 +509,10 @@ public class SimulationPanel extends JPanel {
                         } else {
                             if (elapsedTime == 0) {
                                 tl_west_color = "red_yellow";
+                                setStreetlightCheckpoint("west", "red");
                             } else {
                                 tl_west_color = "green";
+                                setStreetlightCheckpoint("west", "green");
                             }
                         }
                     } else {
@@ -610,6 +641,23 @@ public class SimulationPanel extends JPanel {
         }
 
         repaint();
+    }
+
+    // Dodanie linii stopu i świateł
+    public void setStreetlightCheckpoint(String origin, String color) {
+        if (origin == "south") {
+            streetlights.add(new Streetlight(300, 250, 50, 5, "south", color));
+        } else if (origin == "north") {
+            streetlights.add(new Streetlight(300, 250, 50, 5, "north", color));
+        } else if (origin == "east") {
+            streetlights.add(new Streetlight(350, 250, 5, 50, "east", color));
+        } else {
+            streetlights.add(new Streetlight(245, 300, 5, 50, "west", color));
+        }
+//        streetlights.add(new Streetlight(300, 250, 50, 5, "south", color));
+//        streetlights.add(new Streetlight(250, 245, 50, 5, "north", color));
+//        streetlights.add(new Streetlight(350, 250, 5, 50, "east", color));
+//        streetlights.add(new Streetlight(245, 300, 5, 50, "west", color));
     }
 
 }
