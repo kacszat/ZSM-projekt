@@ -18,7 +18,7 @@ public class SimulationPanel extends JPanel {
     private java.util.List<Car> cars;
     private java.util.List<Car> cars_to_generate;
     private java.util.List<Checkpoint> checkpoints;
-    private java.util.List<Streetlight> streetlights;
+    private java.util.List<Checkpoint_Streetlight> streetlights;
     public long simulation_time; // Czas symulacji w milisekundach
     public long start_time;      // Czas rozpoczęcia symulacji
     public long pause_start_time = 0; // Czas rozpoczęcia pauzy
@@ -47,10 +47,10 @@ public class SimulationPanel extends JPanel {
         checkpoints.add(new Checkpoint(285, 335, 15, 15, "west"));
         checkpoints.add(new Checkpoint(300, 250, 15, 15, "east"));
 
-        streetlights.add(new Streetlight(300, 250, 50, 5, "south", "red"));
-        streetlights.add(new Streetlight(250, 245, 50, 5, "north", "red"));
-        streetlights.add(new Streetlight(350, 250, 5, 50, "east", "red"));
-        streetlights.add(new Streetlight(245, 300, 5, 50, "west", "red"));
+        streetlights.add(new Checkpoint_Streetlight(300, 250, 50, 5, "south", "red"));
+        streetlights.add(new Checkpoint_Streetlight(250, 245, 50, 5, "north", "red"));
+        streetlights.add(new Checkpoint_Streetlight(350, 250, 5, 50, "east", "red"));
+        streetlights.add(new Checkpoint_Streetlight(245, 300, 5, 50, "west", "red"));
     }
 
     @Override
@@ -94,11 +94,6 @@ public class SimulationPanel extends JPanel {
         g.fillRect(250, 245, 50, 5);
         g.fillRect(350, 250, 5, 50);
         g.fillRect(245, 300, 5, 50);
-
-//        // Rysowanie wszystkich sygnalizatorów
-//        for (Streetlight streetlight : streetlights) {
-//            streetlight.draw(g);
-//        }
 
         if (StreetlightsPanel.is_streetlight_on) {
             // Rysowanie sygnalziacji świetlnej
@@ -265,13 +260,36 @@ public class SimulationPanel extends JPanel {
             long elapsedTime = System.currentTimeMillis() - start_time;
             if (elapsedTime >= (simulation_time + pause_time)) {
                 System.out.println("Symulacja zakończona.");
-
                 break;
             }
 
             if (!is_sim_paused) { // Wstrzymanie ruchu pojazdów w pauzie
                 for (Car car : cars) {
                     boolean shouldStop = false;
+
+                    // Sprawdzenie, czy samochód powinien zatrzymać się przy sygnalizacji świetlnej
+                    for (Checkpoint_Streetlight streetlight : streetlights) {
+                        Rectangle carBounds = car.getBounds();
+                        Rectangle streetlightBounds = new Rectangle(streetlight.getX_st(), streetlight.getY_st(),
+                                streetlight.getWidht_st(), streetlight.getHeight_st());
+
+                        if (carBounds.intersects(streetlightBounds)) {
+                            // Pobierz aktualny kolor światła dla danego kierunku
+                            String currentLightColor = getTrafficLightColor(streetlight.getType_st());
+
+                            // Zatrzymaj samochód, jeśli jest czerwone światło
+                            if ("red".equals(currentLightColor) || "red_yellow".equals(currentLightColor) || "yellow".equals(currentLightColor)) {
+                                shouldStop = true;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (shouldStop) {
+                        car.stop();
+                    } else {
+                        car.resume();
+                    }
 
                     // Sprawdzenie, czy w polu widzenia danego pojazdu znajduje się inny pojazd
                     Rectangle fieldOfView = car.getFieldOfView();
@@ -291,41 +309,22 @@ public class SimulationPanel extends JPanel {
                     // Sprawdzenie, czy samochód wchodzi w obszar checkpointu
                     for (Checkpoint checkpoint : checkpoints) {
                         Rectangle carBounds = car.getBounds();
-                        Rectangle checkpointBounds = new Rectangle(checkpoint.getX_ch(), checkpoint.getY_ch(), checkpoint.getWidht_ch(), checkpoint.getHeight_ch());
+                        Rectangle checkpointBounds = new Rectangle(checkpoint.getX_ch(), checkpoint.getY_ch(),
+                                checkpoint.getWidht_ch(), checkpoint.getHeight_ch());
 
-                        // Sprawdź, czy samochód przecina checkpoint i czy nie odwiedził go wcześniej
                         if (carBounds.intersects(checkpointBounds) && !car.hasVisited(checkpoint)) {
-                            car.visitCheckpoint(checkpoint);  // Oznacz checkpoint jako odwiedzony
-                            if (!Objects.equals(car.getOrigin(), checkpoint.getType_ch()) && Objects.equals(car.getTurnDirection(), "left")) {
-                                car.changeDirection();            // Zmień kierunek pojazdu
-                            } else if (Objects.equals(car.getTurnDirection(), "right")){
-                                car.changeDirection();            // Zmień kierunek pojazdu
-                            }
-                            //System.out.println("Samochód dotarł do checkpointu typu: " + checkpoint.getType_ch());
-                            break;
-                        }
-                    }
-
-                    for (Streetlight streetlight : streetlights) {
-                        Rectangle carBounds = car.getBounds();
-                        Rectangle streetlightBounds = new Rectangle(streetlight.getX_st(), streetlight.getY_st(), streetlight.getWidht_st(), streetlight.getHeight_st());
-
-                        // Sprawdź, czy samochód przecina checkpoint i czy nie odwiedził go wcześniej
-                        if (carBounds.intersects(streetlightBounds) && !car.hasVisitedStreetlight(streetlight)) {
-                            car.visitStreetlight(streetlight);  // Oznacz checkpoint streetlight
-                            // jako odwiedzony
-                            if ((Objects.equals(car.getOrigin(), streetlight.getType_st())) && (Objects.equals(streetlight.getColor_st(), "red"))) {
-                                car.stop();            // Stop
-                            } else {
-                                car.resume();            // Ruch
+                            car.visitCheckpoint(checkpoint);
+                            if (!Objects.equals(car.getOrigin(), checkpoint.getType_ch()) &&
+                                    Objects.equals(car.getTurnDirection(), "left")) {
+                                car.changeDirection();
+                            } else if (Objects.equals(car.getTurnDirection(), "right")) {
+                                car.changeDirection();
                             }
                             break;
                         }
-
                     }
 
                     car.setSpeed(OptionsPanel.getTimeSpeedValue());
-
                     car.move();
                 }
             }
@@ -339,6 +338,7 @@ public class SimulationPanel extends JPanel {
             }
         }
     }
+
 
     public void resetSimulation() {
         // Zatrzymanie symulacji, jeśli jest aktywna
@@ -535,6 +535,22 @@ public class SimulationPanel extends JPanel {
         streetlight_timer.start();
     }
 
+    // Funkcja zwraca aktualny kolor światła dla danego kierunku
+    private String getTrafficLightColor(String localisation) {
+        switch (localisation) {
+            case "north":
+                return tl_north_color;
+            case "south":
+                return tl_south_color;
+            case "east":
+                return tl_east_color;
+            case "west":
+                return tl_west_color;
+            default:
+                return "red"; // Domyślnie zakładamy czerwone światło, jeśli kierunek nie jest rozpoznany
+        }
+    }
+
     // Funkcja do rysowania sygnalizatora
     private void drawTrafficLight(String location, String phase) {
         g.setColor(Color.BLACK);
@@ -646,13 +662,13 @@ public class SimulationPanel extends JPanel {
     // Dodanie linii stopu i świateł
     public void setStreetlightCheckpoint(String origin, String color) {
         if (origin == "south") {
-            streetlights.add(new Streetlight(300, 250, 50, 5, "south", color));
+            streetlights.add(new Checkpoint_Streetlight(300, 350, 50, 5, "south", color));
         } else if (origin == "north") {
-            streetlights.add(new Streetlight(300, 250, 50, 5, "north", color));
+            streetlights.add(new Checkpoint_Streetlight(250, 245, 50, 5, "north", color));
         } else if (origin == "east") {
-            streetlights.add(new Streetlight(350, 250, 5, 50, "east", color));
+            streetlights.add(new Checkpoint_Streetlight(350, 250, 5, 50, "east", color));
         } else {
-            streetlights.add(new Streetlight(245, 300, 5, 50, "west", color));
+            streetlights.add(new Checkpoint_Streetlight(245, 300, 5, 50, "west", color));
         }
 //        streetlights.add(new Streetlight(300, 250, 50, 5, "south", color));
 //        streetlights.add(new Streetlight(250, 245, 50, 5, "north", color));

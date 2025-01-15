@@ -1,10 +1,10 @@
-public class Streetlight {
+public class Checkpoint_Streetlight {
 
     private int x, y; // Współrzędne
     private int widht, height; // Wymiary
     private String type, color; // Typ
 
-    public Streetlight(int st_x, int st_y, int st_widht, int st_height, String st_type, String st_color) {
+    public Checkpoint_Streetlight(int st_x, int st_y, int st_widht, int st_height, String st_type, String st_color) {
         this.x = st_x;
         this.y = st_y;
         this.widht = st_widht;
