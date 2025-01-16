@@ -253,14 +253,6 @@ public class Car {
         visitedCheckpoints.add(checkpoint);
     }
 
-    public boolean hasVisitedStreetlight(Checkpoint_Streetlight streetlight) {
-        return visitedStreetlights.contains(streetlight);
-    }
-
-    public void visitStreetlight(Checkpoint_Streetlight streetlight) {
-        visitedStreetlights.add(streetlight);
-    }
-
     public void setSpeed(int new_value) {
         this.speed = base_speed * new_value;
     }

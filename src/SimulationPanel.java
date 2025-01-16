@@ -268,27 +268,23 @@ public class SimulationPanel extends JPanel {
                     boolean shouldStop = false;
 
                     // Sprawdzenie, czy samochód powinien zatrzymać się przy sygnalizacji świetlnej
-                    for (Checkpoint_Streetlight streetlight : streetlights) {
-                        Rectangle carBounds = car.getBounds();
-                        Rectangle streetlightBounds = new Rectangle(streetlight.getX_st(), streetlight.getY_st(),
-                                streetlight.getWidht_st(), streetlight.getHeight_st());
+                    if (StreetlightsPanel.is_streetlight_on) {
+                        for (Checkpoint_Streetlight streetlight : streetlights) {
+                            Rectangle carBounds = car.getBounds();
+                            Rectangle streetlightBounds = new Rectangle(streetlight.getX_st(), streetlight.getY_st(),
+                                    streetlight.getWidht_st(), streetlight.getHeight_st());
 
-                        if (carBounds.intersects(streetlightBounds)) {
-                            // Pobierz aktualny kolor światła dla danego kierunku
-                            String currentLightColor = getTrafficLightColor(streetlight.getType_st());
+                            if (carBounds.intersects(streetlightBounds)) {
+                                // Pobierz aktualny kolor światła dla danego kierunku
+                                String currentLightColor = getTrafficLightColor(streetlight.getType_st());
 
-                            // Zatrzymaj samochód, jeśli jest czerwone światło
-                            if ("red".equals(currentLightColor) || "red_yellow".equals(currentLightColor) || "yellow".equals(currentLightColor)) {
-                                shouldStop = true;
+                                // Zatrzymaj samochód, jeśli jest czerwone światło
+                                if ("red".equals(currentLightColor) || "red_yellow".equals(currentLightColor) || "yellow".equals(currentLightColor)) {
+                                    shouldStop = true;
+                                }
+                                break;
                             }
-                            break;
                         }
-                    }
-
-                    if (shouldStop) {
-                        car.stop();
-                    } else {
-                        car.resume();
                     }
 
                     // Sprawdzenie, czy w polu widzenia danego pojazdu znajduje się inny pojazd
@@ -389,6 +385,10 @@ public class SimulationPanel extends JPanel {
             sim_timer.stop();
         }
 
+        if (streetlight_timer != null && streetlight_timer.isRunning()) {
+            streetlight_timer.stop();
+        }
+
         if (generator_timer != null && generator_timer.isRunning()) {
             generator_timer.stop(); // Zatrzymujemy generator_timer
         }
@@ -399,6 +399,7 @@ public class SimulationPanel extends JPanel {
 
         // Ponwonie uruchamiamy funckję generacji, by zmienić interwał
         startCarGeneration();
+        startTrafficlights();
 
     }
 

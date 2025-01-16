@@ -105,6 +105,7 @@ public class FrameSettings {
                 sim_panel.pause_start_time = System.currentTimeMillis(); // Zapisanie czasu rozpoczęcia pauzy
                 sim_panel.sim_timer.stop();
                 sim_panel.generator_timer.stop();
+                sim_panel.streetlight_timer.stop();
             } else {
                 // Wznowienie symulacji
                 sim_panel.is_sim_paused = false;
@@ -113,6 +114,7 @@ public class FrameSettings {
                 sim_panel.pause_start_time = 0; // Zapisanie czasu rozpoczęcia pauzy
                 sim_panel.sim_timer.start();
                 sim_panel.generator_timer.start();
+                sim_panel.streetlight_timer.start();
             }
         });
 
@@ -138,5 +140,6 @@ public class FrameSettings {
 
         // Wyświetlenie okna
         main_frame.setVisible(true);
+
     }
 }

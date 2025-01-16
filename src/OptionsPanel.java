@@ -198,7 +198,17 @@ public class OptionsPanel extends JPanel {
     private int parseTextField(JTextField textField) {
         try {
             int value = Integer.parseInt(textField.getText().trim());
-            return Math.max(value, 0); // Zwraca wartość, ale nie mniejszą niż 0
+            if (textField == tb_sim_time) {
+                if (value < 1) {
+                    JOptionPane.showMessageDialog(null,
+                            "Czas symulacji nie może być mniejszy niż 1 minuta",
+                            "Błąd",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+                return Math.max(value, 1); // Zwraca wartość, ale nie mniejszą niż 1
+            } else {
+                return Math.max(value, 0); // Zwraca wartość, ale nie mniejszą niż 0
+            }
         } catch (NumberFormatException e) {
             return 0; // Zwraca 0, jeśli pole jest puste lub zawiera błędne dane
         }

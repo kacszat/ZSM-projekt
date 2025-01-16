@@ -231,12 +231,22 @@ public class StreetlightsPanel extends JPanel {
         setVisibility(false, bt_get_streetlights);
     }
 
-    // Metoda pomocnicza, która "parsuje" wartość z pola tekstowego i nie przyjmuje wartości mniejszych niż 0.
+    // Metoda pomocnicza, która "parsuje" wartość z pola tekstowego i nie przyjmuje wartości mniejszych niż 2
     private int parseTextField(JTextField textField) {
         try {
             int value = Integer.parseInt(textField.getText().trim());
-            return Math.max(value, 0); // Zwraca wartość, ale nie mniejszą niż 0
+            if (value < 2) {
+                JOptionPane.showMessageDialog(null,
+                        "Czas fazy nie może być mniejszy niż 2 sekundy",
+                        "Błąd",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+            return Math.max(value, 2); // Zwraca wartość, ale nie mniejszą niż 2
         } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null,
+                    "Wprowadź poprawną liczbę całkowitą większą niż 2",
+                    "Błąd",
+                    JOptionPane.ERROR_MESSAGE);
             return 0; // Zwraca 0, jeśli pole jest puste lub zawiera błędne dane
         }
     }
