@@ -26,7 +26,14 @@ public class SimulationPanel extends JPanel {
     public int timer_time = 0;
     private int time_speed_value;
 
+    private int elapsedSignalTime = 0; // Licznik czasu
+    private int currentSignalIndex = 0; // Indeks aktualnego sygnalizatora
+
+    public static int car_width = 30, car_height = 30, // Szerokość i wysokość samochodu
+            fov_width = 30, fov_height = 60; // Szerokość i wysokość pola widzenia
+
     public Boolean is_sim_paused = false; // Flaga określająca stan pauzy
+    public Boolean is_car_fov_showned = false; // Flaga określająca pokazywanie FOV samochodów
 
     private String tl_south_color = "red", tl_west_color = "red", tl_north_color = "red", tl_east_color = "red"; // Kolory świateł aygnalizacji
 
@@ -105,9 +112,40 @@ public class SimulationPanel extends JPanel {
 
         for (Car car : cars) {
             g.setColor(Color.RED);
-            g.fillRect(car.getX(), car.getY(), 30, 30);
+            g.fillRect(car.getX(), car.getY(), car_width, car_height);
+
+            if (is_car_fov_showned) {
+                drawFOV(g2d, car);
+            }
         }
 
+    }
+
+    // Rysowanie pola widzenia samochodów
+    public void drawFOV(Graphics2D g2d, Car car) {
+        int x = car.getX(); // Pozycja X samochodu
+        int y = car.getY(); // Pozycja Y samochodu
+
+        g2d.setColor(new Color(255, 255, 0, 128)); // Półprzezroczysty żółty kolor
+
+        switch (car.getOrigin()) {
+            case "north":
+                g2d.fillRect(x, y+car_height, fov_width, fov_height); // Pole widzenia skierowane na północ
+                break;
+            case "south":
+                g2d.fillRect(x, y-fov_height, fov_width, fov_height); // Pole widzenia skierowane na południe
+                break;
+            case "east":
+                g2d.fillRect(x-fov_height, y, fov_height, fov_width); // Pole widzenia skierowane na wschód
+                break;
+            case "west":
+                g2d.fillRect(x+car_width, y, fov_height, fov_width); // Pole widzenia skierowane na zachód
+                break;
+            default:
+                // Domyślnie rysowanie wokół samochodu (na wypadek braku kierunku)
+                g2d.fillRect(x , y, fov_width, fov_height);
+                break;
+        }
     }
 
     // Określenie liczby pojazdów i ich relacji
@@ -267,6 +305,15 @@ public class SimulationPanel extends JPanel {
                 for (Car car : cars) {
                     boolean shouldStop = false;
 
+                    // Sprawdzenie, czy w polu widzenia danego pojazdu znajduje się inny pojazd
+                    Rectangle fieldOfView = car.getFieldOfView();
+                    for (Car otherCar : cars) {
+                        if (car != otherCar && fieldOfView.intersects(otherCar.getBounds())) {
+                            shouldStop = true;
+                            break;
+                        }
+                    }
+
                     // Sprawdzenie, czy samochód powinien zatrzymać się przy sygnalizacji świetlnej
                     if (StreetlightsPanel.is_streetlight_on) {
                         for (Checkpoint_Streetlight streetlight : streetlights) {
@@ -280,19 +327,19 @@ public class SimulationPanel extends JPanel {
 
                                 // Zatrzymaj samochód, jeśli jest czerwone światło
                                 if ("red".equals(currentLightColor) || "red_yellow".equals(currentLightColor) || "yellow".equals(currentLightColor)) {
-                                    shouldStop = true;
+                                    if ((!Objects.equals(car.getOrigin(), "south"))) {
+                                        shouldStop = true;
+                                    } else {
+                                        if (car.getY() <= 350) {
+                                            // Zatrzymaj pojazd
+                                            shouldStop = false;
+                                        } else {
+                                            shouldStop = true;
+                                        }
+                                    }
                                 }
                                 break;
                             }
-                        }
-                    }
-
-                    // Sprawdzenie, czy w polu widzenia danego pojazdu znajduje się inny pojazd
-                    Rectangle fieldOfView = car.getFieldOfView();
-                    for (Car otherCar : cars) {
-                        if (car != otherCar && fieldOfView.intersects(otherCar.getBounds())) {
-                            shouldStop = true;
-                            break;
                         }
                     }
 
@@ -346,6 +393,11 @@ public class SimulationPanel extends JPanel {
 
         // Odświeżenie panelu
         repaint();
+
+        // Reset czasu i cyklu sygnalziacji
+        streetlight_timer.stop();
+        elapsedSignalTime = 0;
+        currentSignalIndex = 0;
 
         // Wyzerwoanie czasów
         simulation_time = 0;
@@ -415,8 +467,8 @@ public class SimulationPanel extends JPanel {
 
         // Tworzymy nowy timer, który będzie zarządzał zmianą sygnalizacji
         streetlight_timer = new Timer(1000 / time_speed_value, new ActionListener() {
-        private int elapsedTime = 0; // Licznik czasu
-        private int currentSignalIndex = 0; // Indeks aktualnego sygnalizatora
+//        private int elapsedSignalTime = 0; // Licznik czasu
+//        private int currentSignalIndex = 0; // Indeks aktualnego sygnalizatora
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -433,21 +485,17 @@ public class SimulationPanel extends JPanel {
                 String localisation = keys.get(currentSignalIndex);
                 int duration = values.get(currentSignalIndex);
 
-                // Zmiana świateł tylko na początku cyklu (elapsedTime == 0)
-                //if (elapsedTime == 0) {
-                    System.out.println("Sygnalizator: " + localisation);
-
                     // Logika zmiany koloru sygnalizatora
                     if (localisation.contains("south")) {
                         if (localisation.contains("ewaku")) {
                             setStreetlightCheckpoint("south", "red");
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_south_color = "yellow";
                             } else {
                                 tl_south_color = "red";
                             }
                         } else {
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_south_color = "red_yellow";
                                 setStreetlightCheckpoint("south", "red");
                             } else {
@@ -461,13 +509,13 @@ public class SimulationPanel extends JPanel {
                     if (localisation.contains("east")) {
                         if (localisation.contains("ewaku")) {
                             setStreetlightCheckpoint("east", "red");
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_east_color = "yellow";
                             } else {
                                 tl_east_color = "red";
                             }
                         } else {
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_east_color = "red_yellow";
                                 setStreetlightCheckpoint("east", "red");
                             } else {
@@ -481,13 +529,13 @@ public class SimulationPanel extends JPanel {
                     if (localisation.contains("north")) {
                         if (localisation.contains("ewaku")) {
                             setStreetlightCheckpoint("north", "red");
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_north_color = "yellow";
                             } else {
                                 tl_north_color = "red";
                             }
                         } else {
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_north_color = "red_yellow";
                                 ;
                                 setStreetlightCheckpoint("north", "red");
@@ -502,13 +550,13 @@ public class SimulationPanel extends JPanel {
                     if (localisation.contains("west")) {
                         if (localisation.contains("ewaku")) {
                             setStreetlightCheckpoint("west", "red");
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_west_color = "yellow";
                             } else {
                                 tl_west_color = "red";
                             }
                         } else {
-                            if (elapsedTime == 0) {
+                            if (elapsedSignalTime == 0) {
                                 tl_west_color = "red_yellow";
                                 setStreetlightCheckpoint("west", "red");
                             } else {
@@ -522,12 +570,12 @@ public class SimulationPanel extends JPanel {
                 //}
 
                 // Zwiększanie licznika czasu
-                elapsedTime++;
+                elapsedSignalTime++;
 
                 // Po osiągnięciu czasu trwania dla aktualnego sygnalizatora przechodzimy do kolejnego
-                if (elapsedTime >= duration) {
+                if (elapsedSignalTime >= duration) {
                     currentSignalIndex = (currentSignalIndex + 1) % keys.size(); // Przejście do kolejnego sygnalizatora
-                    elapsedTime = 0; // Reset licznika czasu dla nowego sygnalizatora
+                    elapsedSignalTime = 0; // Reset licznika czasu dla nowego sygnalizatora
                 }
             }
         });

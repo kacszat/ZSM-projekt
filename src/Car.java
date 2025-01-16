@@ -10,8 +10,11 @@ public class Car {
     private String destination; // Destynacja
     private String original_origin; // Oryginalne pochodzenie
     private String turn_direction; // Kierunek skrętu
-    private static final int base_speed = 5;
+    private static final int base_speed = 4;
     private int speed;
+
+    private int car_width = SimulationPanel.car_width, car_height = SimulationPanel.car_height;
+    private int fov_width = SimulationPanel.fov_width, fov_height = SimulationPanel.fov_height;
 
     private Set<Checkpoint> visitedCheckpoints; // Lista odwiedzonych checkpointów
     private Set<Checkpoint_Streetlight> visitedStreetlights; // Lista odwiedzonych checkpointów
@@ -143,22 +146,19 @@ public class Car {
         }
     }
 
-
+    // Pole widzenia
     public Rectangle getFieldOfView() {
-        int width = 40;  // Szerokość pola widzenia
-        int height = 100; // Długość pola widzenia
-
-        switch (destination) {
+        switch (origin) {
             case "north":
-                return new Rectangle(x, y - height, width, height);
+                return new Rectangle(x, y+car_height, fov_width, fov_height);
             case "south":
-                return new Rectangle(x, y, width, height);
+                return new Rectangle(x, y-fov_height, fov_width, fov_height);
             case "east":
-                return new Rectangle(x, y, height, width);
+                return new Rectangle(x-fov_height, y, fov_height, fov_width);
             case "west":
-                return new Rectangle(x - height, y, height, width);
+                return new Rectangle(x+car_width, y, fov_height, fov_width);
             default:
-                return new Rectangle(x, y, width, height);
+                return new Rectangle(x, y, fov_width, fov_height);
         }
     }
 

@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Map;
 
 public class FrameSettings {
@@ -30,7 +32,7 @@ public class FrameSettings {
         // Opcje
         main_menubar = new JMenuBar();
         main_menu = new JMenu("Opcje");
-        menu_option_1 = new JMenuItem("Option1");
+        menu_option_1 = new JMenuItem("Pokaż FOV samochodów");
         menu_option_2 = new JMenuItem("Option2");
         menu_option_3 = new JMenuItem("Option3");
         menu_option_4 = new JMenuItem("Option4");
@@ -42,6 +44,15 @@ public class FrameSettings {
 
         main_menubar.add(main_menu);
         main_frame.setJMenuBar(main_menubar);
+
+        // Dodanie ActionListener do menu_option_1
+        menu_option_1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Zmiana wartości boolean
+                sim_panel.is_car_fov_showned = !sim_panel.is_car_fov_showned; // Przełączamy wartość między true i false
+            }
+        });
 
 //        // Ustawienie układu GridBagLayout
 //        main_frame.setLayout(new GridBagLayout());
