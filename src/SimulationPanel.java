@@ -394,8 +394,7 @@ public class SimulationPanel extends JPanel {
         // Odświeżenie panelu
         repaint();
 
-        // Reset czasu i cyklu sygnalziacji
-        streetlight_timer.stop();
+        // Reset czasu i cyklu sygnalizacji
         elapsedSignalTime = 0;
         currentSignalIndex = 0;
 

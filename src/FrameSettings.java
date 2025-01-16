@@ -38,9 +38,9 @@ public class FrameSettings {
         menu_option_4 = new JMenuItem("Option4");
 
         main_menu.add(menu_option_1);
-        main_menu.add(menu_option_2);
-        main_menu.add(menu_option_3);
-        main_menu.add(menu_option_4);
+//        main_menu.add(menu_option_2);
+//        main_menu.add(menu_option_3);
+//        main_menu.add(menu_option_4);
 
         main_menubar.add(main_menu);
         main_frame.setJMenuBar(main_menubar);
@@ -53,28 +53,6 @@ public class FrameSettings {
                 sim_panel.is_car_fov_showned = !sim_panel.is_car_fov_showned; // Przełączamy wartość między true i false
             }
         });
-
-//        // Ustawienie układu GridBagLayout
-//        main_frame.setLayout(new GridBagLayout());
-//        GridBagConstraints new_grid = new GridBagConstraints();
-//        new_grid.gridx = 0;
-//        new_grid.gridy = 0;
-//        new_grid.anchor = GridBagConstraints.CENTER;
-//        //new_grid.insets = new Insets(10, 10, 10, 10); // Dodanie marginesów
-//
-//        // Panel symulacji
-//        sim_panel = new SimulationPanel();
-//        sim_panel.setPreferredSize(new Dimension(panel_width, panel_height));
-//        main_frame.add(sim_panel, new_grid);
-//
-//        // Tworzenie JLabel
-//        JLabel label = new JLabel("Witaj w moim programie!", JLabel.LEFT);
-//
-//        // Dodanie JLabel do głównego okna, ustawienie constraints
-//        new_grid.gridx = 0;
-//        new_grid.gridy = 1; // Umieszczenie poniżej panelu symulacji
-//        new_grid.anchor = GridBagConstraints.WEST; // Ustawienie wyrównania do lewej
-//        main_frame.add(label, new_grid);
 
         // Ustawienie układu BorderLayout
         main_frame.setLayout(new BorderLayout());
